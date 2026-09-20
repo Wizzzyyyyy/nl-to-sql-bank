@@ -1,4 +1,10 @@
+iimport os
 import streamlit as st
+
+if hasattr(st, "secrets") and len(st.secrets) > 0:
+    for key, value in st.secrets.items():
+        os.environ[key] = str(value)
+
 import pandas as pd
 from nl_to_sql import nl_to_sql, is_select_only, explain_result
 from ask import clean_sql, execute_sql
