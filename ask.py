@@ -2,7 +2,7 @@ import os
 import re
 import psycopg2
 from dotenv import load_dotenv
-from nl_to_sql import nl_to_sql
+from nl_to_sql import nl_to_sql, is_select_only
 
 load_dotenv()
 
@@ -34,8 +34,8 @@ def ask(question):
     print("Question:", question)
     print("Generated SQL:", sql)
 
-    if not sql.strip().upper().startswith("SELECT"):
-        print("⚠️ Refusing to run this — it doesn't look like a SELECT query.")
+    if not is_select_only(sql):
+        print("⚠️ Refusing to run this — validator confirmed it isn't a plain SELECT.")
         return
 
     try:
@@ -56,4 +56,4 @@ def ask(question):
         print(row)
 
 if __name__ == "__main__":
-    ask("Who is the youngest customer?")
+    ask("Show me the names of customers who have taken a loan and also have a high-risk transaction.")
