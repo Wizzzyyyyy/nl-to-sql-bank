@@ -56,4 +56,4 @@ def ask(question):
         print(row)
 
 if __name__ == "__main__":
-    ask("Show me the names of customers who have taken a loan and also have a high-risk transaction.")
+    ask("List customers sorted by how much they've saved")
