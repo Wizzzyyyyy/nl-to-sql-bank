@@ -1,5 +1,8 @@
-iimport os
+import os
 import streamlit as st
+
+if "history" not in st.session_state:
+    st.session_state.history = []
 
 if hasattr(st, "secrets") and len(st.secrets) > 0:
     for key, value in st.secrets.items():
@@ -20,12 +23,13 @@ if st.button("Ask"):
         st.warning("Type a question first.")
     else:
         with st.spinner("Thinking..."):
-            raw_sql = nl_to_sql(question)
+            raw_sql = nl_to_sql(question, history=st.session_state.history)
             sql = clean_sql(raw_sql)
 
         if not is_select_only(sql):
             st.error("⚠️ Refusing to run this — validator confirmed it isn't a plain SELECT.")
             log_query(question, sql, "blocked")
+            st.session_state.history.append({"question": question, "sql": sql})
         else:
             try:
                 columns, rows = execute_sql(sql)

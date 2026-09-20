@@ -15,13 +15,23 @@ transactions(transaction_id, account_id, amount, transaction_time, transaction_t
 loans(loan_id, customer_id, amount, status, interest_rate, issue_date)
 """
 
-def nl_to_sql(question, max_retries=3):
+def nl_to_sql(question, history=None, max_retries=3):
+    history_text = ""
+    if history:
+        history_text = "Previous conversation:\n" + "\n".join(
+            f'Q: {h["question"]}\nSQL: {h["sql"]}' for h in history[-2:]
+        )
+
     prompt = f"""You are a SQL expert. Given this PostgreSQL schema:
 
 {SCHEMA}
 
-Write ONE PostgreSQL SELECT query that answers this question:
+{history_text}
+
+Write ONE PostgreSQL SELECT query that answers this new question:
 "{question}"
+
+If the new question references something from the previous conversation (like "that", "them", or a follow-up filter), use that context.
 
 Rules:
 - Output ONLY the raw SQL query — no explanation, no markdown, no backticks.
@@ -60,7 +70,7 @@ The database returned these results (columns: {columns}):
 Write a single, clear sentence in plain English answering the user's question based on this data. Do not mention SQL or databases.
 """
     response = client.models.generate_content(
-        model="gemini-2.5-flash-lite",
+        model="gemini-3.6-flash",
         contents=prompt
     )
     return response.text.strip()
