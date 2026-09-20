@@ -49,6 +49,22 @@ def is_select_only(sql):
         return False
     return parsed.key.upper() == "SELECT"
 
+def explain_result(question, columns, rows):
+    if not rows:
+        return "No results were found for this question."
+    preview = rows[:10]
+    prompt = f"""A user asked: "{question}"
+The database returned these results (columns: {columns}):
+{preview}
+
+Write a single, clear sentence in plain English answering the user's question based on this data. Do not mention SQL or databases.
+"""
+    response = client.models.generate_content(
+        model="gemini-2.5-flash-lite",
+        contents=prompt
+    )
+    return response.text.strip()
+
 if __name__ == "__main__":
     question = "What's the total value of transactions flagged as high-risk in the last 30 days?"
     sql = nl_to_sql(question)

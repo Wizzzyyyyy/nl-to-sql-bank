@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from nl_to_sql import nl_to_sql, is_select_only
+from nl_to_sql import nl_to_sql, is_select_only, explain_result
 from ask import clean_sql, execute_sql
 
 st.set_page_config(page_title="Bank NL-to-SQL Assistant", page_icon="🏦")
@@ -21,10 +21,17 @@ if st.button("Ask"):
         else:
             try:
                 columns, rows = execute_sql(sql)
+            except Exception as e:
+                st.error(f"⚠️ Couldn't run that query: {e}")
+            else:
+                st.code(sql, language="sql")
+
                 if not rows:
                     st.info("No results found for that question.")
                 else:
                     df = pd.DataFrame(rows, columns=columns)
                     st.dataframe(df)
-            except Exception as e:
-                st.error(f"⚠️ Couldn't run that query: {e}")
+
+                    with st.spinner("Summarizing..."):
+                        explanation = explain_result(question, columns, rows)
+                    st.success(explanation)
